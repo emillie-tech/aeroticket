@@ -1,0 +1,44 @@
+[
+  {"iata":"SAL","airport_name":"San Salvador - El Salvador","city":"San Salvador","country_name":"El Salvador","country_code":"SV","price":90},
+
+  {"iata":"BOG","airport_name":"El Dorado","city":"Bogotá","country_name":"Colombia","country_code":"CO","price":120},
+  {"iata":"MDE","airport_name":"José María Córdova","city":"Medellín","country_name":"Colombia","country_code":"CO","price":110},
+  {"iata":"CTG","airport_name":"Rafael Núñez","city":"Cartagena","country_name":"Colombia","country_code":"CO","price":100},
+  {"iata":"CLO","airport_name":"Alfonso Bonilla Aragón","city":"Cali","country_name":"Colombia","country_code":"CO","price":95},
+
+  {"iata":"MEX","airport_name":"Ciudad de México","city":"Ciudad de México","country_name":"México","country_code":"MX","price":140},
+  {"iata":"CUN","airport_name":"Cancún","city":"Cancún","country_name":"México","country_code":"MX","price":150},
+  {"iata":"GDL","airport_name":"Guadalajara","city":"Guadalajara","country_name":"México","country_code":"MX","price":125},
+
+  {"iata":"LAX","airport_name":"Los Angeles Intl","city":"Los Ángeles","country_name":"Estados Unidos","country_code":"US","price":220},
+  {"iata":"JFK","airport_name":"John F. Kennedy Intl","city":"Nueva York","country_name":"Estados Unidos","country_code":"US","price":210},
+  {"iata":"MIA","airport_name":"Miami Intl","city":"Miami","country_name":"Estados Unidos","country_code":"US","price":200},
+
+  {"iata":"GRU","airport_name":"São Paulo/Guarulhos","city":"São Paulo","country_name":"Brasil","country_code":"BR","price":180},
+  {"iata":"GIG","airport_name":"Rio de Janeiro/Galeão","city":"Río de Janeiro","country_name":"Brasil","country_code":"BR","price":170},
+
+  {"iata":"EZE","airport_name":"Ezeiza","city":"Buenos Aires","country_name":"Argentina","country_code":"AR","price":160},
+  {"iata":"AEP","airport_name":"Aeroparque","city":"Buenos Aires","country_name":"Argentina","country_code":"AR","price":150},
+
+  {"iata":"SCL","airport_name":"Arturo Merino Benítez","city":"Santiago","country_name":"Chile","country_code":"CL","price":155},
+  {"iata":"PMC","airport_name":"El Tepual","city":"Puerto Montt","country_name":"Chile","country_code":"CL","price":140},
+
+  {"iata":"PTY","airport_name":"Tocumen Intl","city":"Ciudad de Panamá","country_name":"Panamá","country_code":"PA","price":130},
+  {"iata":"SJO","airport_name":"Juan Santamaría","city":"San José","country_name":"Costa Rica","country_code":"CR","price":125},
+  {"iata":"GUA","airport_name":"La Aurora","city":"Ciudad de Guatemala","country_name":"Guatemala","country_code":"GT","price":110},
+
+  {"iata":"AUA","airport_name":"Reina Beatrix","city":"Oranjestad","country_name":"Aruba","country_code":"AW","price":135},
+
+  {"iata":"MAD","airport_name":"Madrid-Barajas","city":"Madrid","country_name":"España","country_code":"ES","price":190},
+  {"iata":"BCN","airport_name":"Barcelona-El Prat","city":"Barcelona","country_name":"España","country_code":"ES","price":185},
+  {"iata":"AGP","airport_name":"Málaga","city":"Málaga","country_name":"España","country_code":"ES","price":170},
+
+  {"iata":"CDG","airport_name":"Charles de Gaulle","city":"París","country_name":"Francia","country_code":"FR","price":200},
+  {"iata":"FRA","airport_name":"Frankfurt Intl","city":"Frankfurt","country_name":"Alemania","country_code":"DE","price":210},
+  {"iata":"LHR","airport_name":"Heathrow","city":"Londres","country_name":"Reino Unido","country_code":"UK","price":205},
+
+  {"iata":"HND","airport_name":"Haneda","city":"Tokio","country_name":"Japón","country_code":"JP","price":260},
+  {"iata":"DXB","airport_name":"Dubai Intl","city":"Dubái","country_name":"Emiratos Árabes Unidos","country_code":"AE","price":270},
+  {"iata":"SIN","airport_name":"Changi","city":"Singapur","country_name":"Singapur","country_code":"SG","price":250},
+  {"iata":"HKG","airport_name":"Hong Kong Intl","city":"Hong Kong","country_name":"China","country_code":"CN","price":240}
+]

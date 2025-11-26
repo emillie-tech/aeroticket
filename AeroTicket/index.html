@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AeroTicket</title>
+
+  <!-- estilos -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- QR lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<body>
+<header class="navbar">
+  <div class="nav-left">
+    <img src="logo2.png" alt="AeroTicket Logo" class="nav-logo">
+
+    <div class="brand">
+      <h1>AeroTicket</h1>
+      <p class="subtitle">Tu ticket, a un tap</p>
+    </div>
+  </div>
+
+  <button id="navToggle" class="hamburger">
+    <span></span><span></span><span></span>
+  </button>
+
+  <nav class="nav-menu" id="navMenu">
+    <a href="home.html" class="nav-btn">Inicio</a>
+    <a href="index.html" class="nav-btn active">Reservar</a>
+    <a href="CAMBIAR_ENLACE" class="nav-btn">Blog de destinos</a>
+    <a href="CAMBIAR_ENLACE" class="nav-btn">Centro de ayuda</a>
+  </nav>
+</header>
+
+  <main class="main">
+    <section class="form-section">
+      <form id="reservaForm" class="form-card" autocomplete="off">
+        <h2>Datos del pasajero</h2>
+
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" type="text" required placeholder="Ej. Ana María Pérez Gómez">
+        <span class="error-msg" id="nombre-error"></span>
+
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" required placeholder="Ej. anaperez@correo.com">
+        <span class="error-msg" id="correo-error"></span>
+
+        <label for="idNacional">Número de identificación</label>
+        <input type="text" id="identificacion" name="identificacion" required placeholder="Ej. 01234567-8">
+        <span id="id-error" class="error-msg"></span>
+
+<br>
+<br>
+
+<h2 style="margin-bottom: 0%;">Datos del vuelo</h2>
+<div class="vuelo-container">
+
+  <div class="vuelo-col">
+    <label for="origen">Origen</label>
+    <select id="origen" name="origen">
+      <option value="">Selecciona un aeropuerto...</option>
+    </select>
+
+    <label for="fechaSalida" class="label-fecha">Fecha de salida</label>
+    <input type="date" id="fechaSalida" name="fechaSalida">
+  </div>
+
+
+  <div class="vuelo-col">
+    <label for="destino">Destino</label>
+    <select id="destino" name="destino">
+      <option value="">Selecciona un aeropuerto...</option>
+    </select>
+
+    <label for="fechaRegreso" class="label-fecha">Fecha de regreso</label>
+    <input type="date" id="fechaRegreso" name="fechaRegreso">
+  </div>
+
+</div>
+
+</div>
+<br>
+
+
+        <label for="tarifa">Tarifa</label>
+        <div class="tarifas">
+          <label><input type="radio" name="tarifa" value="economica" checked> Económica (+$100 / vuelo)</label>
+          <label><input type="radio" name="tarifa" value="clasica"> Clásica (+$150 / vuelo)</label>
+          <label><input type="radio" name="tarifa" value="business"> Business (+$250 / vuelo)</label>
+        </div>
+<br>
+        <button type="submit" class="btn">Ir a pagar</button>
+      </form>
+    </section>
+
+    <aside class="summary-section">
+      <div class="summary-card" id="resumenCard">
+        <div class="summary-top">
+          <h3 id="rutaTitulo">Selecciona origen y destino</h3>
+          <div id="statusFlight" style="font-size: 9pt;" class="muted">Aquí verás el resumen del precio antes de confirmar.</div>
+        </div>
+
+        <div class="summary-body">
+          <div class="seg">
+            <div class="seg-left">Salida</div>
+            <div class="seg-right" id="resFechaSalida">—</div>
+          </div>
+
+          <div class="seg">
+            <div class="seg-left">Regreso</div>
+            <div class="seg-right" id="resFechaRegreso">—</div>
+          </div>
+
+          <hr>
+
+          <div class="price-row">
+            <div>Precio vuelo de ida</div>
+            <div id="resPrecioOrigen">$0.00</div>
+          </div>
+          <div class="price-row">
+            <div>Precio vuelo de regreso</div>
+            <div id="resPrecioDestino">$0.00</div>
+          </div>
+          <div class="price-row">
+            <div>Tarifa aplicada</div>
+            <div id="resTarifa">—</div>
+          </div>
+
+          <hr>
+
+          <div class="price-row">
+            <div>Subtotal</div>
+            <div id="resSubtotal">$0.00</div>
+          </div>
+          <div class="price-row">
+            <div>Impuestos</div>
+            <div id="resImpuestos">$0.00</div>
+          </div>
+          <div class="price-row">
+            <div>Recargo por temporada</div>
+            <div id="resRecargo">$0.00</div>
+          </div>
+
+          <hr class="thick">
+
+          <div class="price-row total">
+            <div>Total a pagar</div>
+            <div id="resTotal">$0.00</div>
+          </div>
+
+          <div class="muted small" style="font-size: 10pt;" id="noteTax">
+            * Los precios mostrados ya reciben impuestos y recargos cuando corresponda.
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="sistema.js"></script>
+  <!-- Pantalla éxito (inicialmente oculta) -->
+  <div id="successScreen" class="overlay hidden">
+    <div class="ticket-card">
+      <div class="ticket-header">
+  <img src="logo.png" alt="AeroTicket Logo" style="width: 60px;" class="app-logo">
+        <div>
+          <h2>Reserva exitosa</h2>
+          <p id="confText">Se creó tu reserva. Revisa el ticket abajo.</p>
+        </div>
+      </div>
+
+      <div id="boardingPass" class="boarding-pass">
+        <div class="bp-left">
+          <div class="bp-route" id="bpRoute">—</div>
+          <div class="bp-dates" id="bpDates">—</div>
+          <div class="bp-info">
+            <div><strong>Tarifa:</strong> <span id="bpTarifa">—</span></div>
+            <div><strong>Clase:</strong> <span id="bpClase">—</span></div>
+            <div><strong>Código:</strong> <span id="bpCode">—</span></div>
+          </div>
+        </div>
+        <div class="bp-right">
+          <div id="qrcode"></div>
+          <div class="bp-price" id="bpPrice">$0.00</div>
+        </div>
+      </div>
+
+      <div class="ticket-actions">
+        <button class="btn" id="printBtn">Imprimir/Descargar</button>
+        <button class="btn ghost" id="newBtn">Hacer otra reserva</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer-bar">
+    <p>Copyright ©2025 AeroTicket | Creado por: Emillie Esquivel & Johanna Claros</p>
+</footer>
+</body>
+</html>
