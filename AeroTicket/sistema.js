@@ -30,52 +30,38 @@ let progressSteps = {};
 
 /* --------------- NAVEGACIÓN Y BARRA DE PROGRESO --------------- */
 
-function updateProgressBar(stepNumber) {
-    const fill = safeGet("progressBarFill");
-    let width = 0;
-
-    // Limpiar clases de todos los pasos
-    Object.values(progressSteps).forEach(el => {
-        el && el.classList.remove("active", "completed");
-    });
-    
-   // Configurar el estado de los pasos
-    if (stepNumber >= 1) {
-        progressSteps[1] && progressSteps[1].classList.add("active");
-    }
-    if (stepNumber >= 2) {
-        progressSteps[1] && progressSteps[1].classList.add("completed");
-        progressSteps[2] && progressSteps[2].classList.add("active");
-        width = 50; // 50% de avance
-    }
-    if (stepNumber >= 3) {
-        progressSteps[1] && progressSteps[1].classList.add("completed");
-        progressSteps[2] && progressSteps[2].classList.add("completed");
-        progressSteps[3] && progressSteps[3].classList.add("completed");
-        width = 100; // 100% completado
-    }
-    
-    fill && (fill.style.width = width + "%");
-}
 function goToStep(stepNumber) {
     const s1 = safeGet("step1Container");
     const s2 = safeGet("step2Container");
     const success = safeGet("successScreen");
     const main = safeGet("main");
+    
+    // --- NUEVOS ELEMENTOS A CONTROLAR EN EL RESUMEN (Summary Section) ---
+    // Asegúrate de que tu resumen de compra tenga el ID "resumenCard"
+    const resumenCard = safeGet("resumenCard"); 
+    // Asegúrate de que el contenedor de los botones de ticket tenga el ID "ticketActionsMain"
+    const ticketActionsMain = safeGet("ticketActionsMain"); 
+    // -------------------------------------------------------------------
 
-    // Ocultar todas las secciones principales (formularios)
+    // Ocultar todas las secciones principales (formularios y éxito)
     s1 && s1.classList.add("hidden");
     s2 && s2.classList.add("hidden");
     success && success.classList.add("hidden");
     
-    // Mostrar la sección <main> si vamos al paso 1, 2 o 3 (el resumen está en main)
-    if (stepNumber === 1 || stepNumber === 2 || stepNumber === 3) {
+    // Lógica para mostrar/ocultar los elementos del resumen lateral y el contenido principal
+    if (stepNumber === 1 || stepNumber === 2) {
         main && main.classList.remove("hidden");
-    } else {
+        resumenCard && resumenCard.classList.remove("hidden");
+        ticketActionsMain && ticketActionsMain.classList.add("hidden"); // OCULTAR los botones en pasos 1 y 2
+    } else if (stepNumber === 3) {
+        // En el paso 3 (Éxito), ocultamos el contenedor principal (main) y el resumen lateral,
+        // ya que el ticket de éxito aparece en un modal (successScreen).
         main && main.classList.add("hidden");
+        resumenCard && resumenCard.classList.add("hidden"); // OCULTAR la tarjeta de resumen lateral
+        ticketActionsMain && ticketActionsMain.classList.add("hidden"); // OCULTAR los botones laterales
     }
 
-
+    // Lógica para mostrar el contenido del paso actual
     if (stepNumber === 1) {
         s1 && s1.classList.remove("hidden");
         updateProgressBar(1);
@@ -97,9 +83,9 @@ function goToStep(stepNumber) {
     } else if (stepNumber === 3) {
         success && success.classList.remove("hidden");
         updateProgressBar(3);
+        // Los botones de ticket ahora solo aparecerán dentro del modal #successScreen.
     }
 }
-
 
 /* --------------- cargar aeropuertos --------------- */
 async function loadAirports() {
