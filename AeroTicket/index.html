@@ -33,227 +33,229 @@
   </nav>
 </header>
 <!-- nuevo paso de pago estilo barra de progreso-->
-
-  <div class="progress-container">
+<div class="progress-container">
     <div class="progress-bar-line">
         <div class="progress-bar-fill" id="progressBarFill"></div>
     </div>
-    <div class="progress-step active" id="progressStep1">
+    
+    <div class="progress-step" id="progressStep1">
         <span class="step-circle">1</span>
-        <span class="step-label">Datos de Vuelo</span>
+        <span class="step-text">Datos del vuelo</span>
     </div>
     <div class="progress-step" id="progressStep2">
         <span class="step-circle">2</span>
-        <span class="step-label">Pago Seguro</span>
+        <span class="step-text">Pago seguro</span>
     </div>
     <div class="progress-step" id="progressStep3">
         <span class="step-circle">3</span>
-        <span class="step-label">Generar Ticket</span>
+        <span class="step-text">Generar ticket</span>
     </div>
 </div>
 <!-- inicia el main-->
 <main class="main">
 
-    <section id="step1Container" class="form-section">
+  <section id="step1Container" class="form-section">
+    
+    <form id="reservaForm" class="form-card" autocomplete="off">
+      <h2>Datos del pasajero</h2>
+
+      <label for="nombre">Nombre completo</label>
+      <input id="nombre" type="text" required placeholder="Ej. Ana María Pérez Gómez">
+      <span class="error-msg" id="nombre-error"></span>
+
+      <label for="correo">Correo electrónico</label>
+      <input id="correo" type="email" required placeholder="Ej. anaperez@correo.com">
+      <span class="error-msg" id="correo-error"></span>
+
+      <label for="idNacional">Número de identificación</label>
+      <input type="text" id="identificacion" name="identificacion" required placeholder="Ej. 01234567-8">
+      <span id="id-error" class="error-msg"></span>
+
+      <br>
+      <br>
+
+      <h2 style="margin-bottom: 0%;">Datos del vuelo</h2>
+      <div class="vuelo-container">
+
+          <div class="vuelo-col">
+              <label for="origen">Origen</label>
+              <select id="origen" name="origen" required>
+              <option value="">Selecciona un aeropuerto...</option>
+              </select>
+              <span class="error-msg" id="origen-error"></span>
+
+
+              <label for="fechaSalida" class="label-fecha">Fecha de salida</label>
+              <input type="date" id="fechaSalida" name="fechaSalida" required>
+              <span class="error-msg" id="salida-error"></span>
+          </div>
+
+
+          <div class="vuelo-col">
+              <label for="destino">Destino</label>
+              <select id="destino" name="destino" required>
+              <option value="">Selecciona un aeropuerto...</option>
+              </select>
+              <span class="error-msg" id="destino-error"></span>
+
+
+              <label for="fechaRegreso" class="label-fecha">Fecha de regreso</label>
+              <input type="date" id="fechaRegreso" name="fechaRegreso">
+              <span class="error-msg" id="regreso-error"></span>
+          </div>
+      </div>
+      <br>
+
+
+      <label for="tarifa">Tarifa</label>
+      <div class="tarifas">
+          <label><input type="radio" name="tarifa" value="economica" required checked> Económica (+$100 / vuelo)</label>
+          <label><input type="radio" name="tarifa" value="clasica"> Clásica (+$150 / vuelo)</label>
+          <label><input type="radio" name="tarifa" value="business"> Business (+$250 / vuelo)</label>
+      </div>
+      <span class="error-msg" id="tarifa-error"></span>
+      <br>
       
-      <form id="reservaForm" class="form-card" autocomplete="off">
-        <h2>Datos del pasajero</h2>
+      <button type="submit" class="btn">Ir a pagar →</button>
+    </form>
 
-        <label for="nombre">Nombre completo</label>
-        <input id="nombre" type="text" required placeholder="Ej. Ana María Pérez Gómez">
-        <span class="error-msg" id="nombre-error"></span>
+  </section>
+  <section id="step2Container" class="form-section hidden">
+      <form id="paymentForm" class="form-card" autocomplete="off">
+          <div class="payment-summary-display">
+              <span class="muted small" id="paymentRouteDisplay">Ruta seleccionada</span>
+              <div class="price-row total">
+                  <div>Total a pagar:</div> <div id="paymentTotalDisplay" class="payment-total-amount">$0.00</div>
+              </div>
+          </div>
 
-        <label for="correo">Correo electrónico</label>
-        <input id="correo" type="email" required placeholder="Ej. anaperez@correo.com">
-        <span class="error-msg" id="correo-error"></span>
+          <h3 class="payment-subtitle">Detalles de la tarjeta</h3> <label for="cardNumber">Número de tarjeta</label> <input id="cardNumber" type="text" required placeholder="0000 0000 0000 0000" maxlength="19" class="card-input"> <span class="error-msg" id="cardNumber-error"></span>
 
-        <label for="idNacional">Número de identificación</label>
-        <input type="text" id="identificacion" name="identificacion" required placeholder="Ej. 01234567-8">
-        <span id="id-error" class="error-msg"></span>
+          <label for="cardHolder">Nombre del titular de la tarjeta</label> <input id="cardHolder" type="text" required placeholder="Nombre y apellido" class="card-input"> <span class="error-msg" id="cardHolder-error"></span>
+          
+          <div class="vuelo-container">
+              <div class="vuelo-col">
+                  <label for="expiryDate">Fecha de expiración (MM/AA)</label> <input type="text" id="expiryDate" required placeholder="MM/AA" maxlength="5" class="card-input"> <span class="error-msg" id="expiryDate-error"></span>
+              </div>
+              <div class="vuelo-col">
+                  <label for="cvv">CVV</label>
+                  <input type="password" id="cvv" required placeholder="123" maxlength="4" class="card-input">
+                  <span class="error-msg" id="cvv-error"></span>
+              </div>
+          </div>
 
-        <br>
-        <br>
+          <h3 class="payment-subtitle">Facturación</h3> <label for="billingAddress">Calle y número</label> <input id="billingAddress" type="text" required placeholder="Av. Principal #123">
 
-        <h2 style="margin-bottom: 0%;">Datos del vuelo</h2>
-        <div class="vuelo-container">
+          <div class="vuelo-container">
+              <div class="vuelo-col">
+                  <label for="billingCity">Ciudad</label>
+                  <input id="billingCity" type="text" required placeholder="San Salvador">
+              </div>
+              <div class="vuelo-col">
+                  <label for="billingZip">Código postal</label> <input id="billingZip" type="text" required placeholder="00000">
+                  <span class="error-msg" id="billingZip-error"></span>
+              </div>
+          </div>
+          
+          <div class="terms-container">
+              <input type="checkbox" id="acceptTerms" required>
+              <label for="acceptTerms" class="terms-label">Acepto los <a href="#">términos y condiciones</a></label> <span class="error-msg" id="terms-error"></span>
+          </div>
 
-            <div class="vuelo-col">
-                <label for="origen">Origen</label>
-                <select id="origen" name="origen" required>
-                <option value="">Selecciona un aeropuerto...</option>
-                </select>
-                <span class="error-msg" id="origen-error"></span>
-
-
-                <label for="fechaSalida" class="label-fecha">Fecha de salida</label>
-                <input type="date" id="fechaSalida" name="fechaSalida" required>
-                <span class="error-msg" id="salida-error"></span>
-            </div>
-
-
-            <div class="vuelo-col">
-                <label for="destino">Destino</label>
-                <select id="destino" name="destino" required>
-                <option value="">Selecciona un aeropuerto...</option>
-                </select>
-                <span class="error-msg" id="destino-error"></span>
-
-
-                <label for="fechaRegreso" class="label-fecha">Fecha de regreso</label>
-                <input type="date" id="fechaRegreso" name="fechaRegreso">
-                <span class="error-msg" id="regreso-error"></span>
-            </div>
-        </div>
-        <br>
-
-
-        <label for="tarifa">Tarifa</label>
-        <div class="tarifas">
-            <label><input type="radio" name="tarifa" value="economica" required checked> Económica (+$100 / vuelo)</label>
-            <label><input type="radio" name="tarifa" value="clasica"> Clásica (+$150 / vuelo)</label>
-            <label><input type="radio" name="tarifa" value="business"> Business (+$250 / vuelo)</label>
-        </div>
-        <span class="error-msg" id="tarifa-error"></span>
-        <br>
-        
-        <button type="submit" class="btn">Ir a Pagar →</button>
+          <div class="btn-group">
+              <button type="submit" class="btn">Generar ticket</button> <button type="button" class="btn ghost" id="backToStep1">Volver a datos</button> </div>
       </form>
+  </section>
+  <aside class="summary-section">
+    <div class="summary-card" id="resumenCard">
+      <div class="summary-top">
+        <h3 id="rutaTitulo">Selecciona origen y destino</h3>
+        <div id="statusFlight" style="font-size: 9pt;" class="muted">Aquí verás el resumen del precio antes de confirmar.</div>
+      </div>
 
-    </section>
-    <section id="step2Container" class="form-section hidden">
-        <form id="paymentForm" class="form-card" autocomplete="off">
-            <h2>Paso 2 de 3: Pago Seguro</h2>
-
-            <div class="payment-summary-display">
-                <span class="muted small" id="paymentRouteDisplay">Ruta seleccionada</span>
-                <div class="price-row total">
-                    <div>Total a Pagar:</div>
-                    <div id="paymentTotalDisplay" class="payment-total-amount">$0.00</div>
-                </div>
-            </div>
-
-            <h3 class="payment-subtitle">Detalles de la Tarjeta</h3>
-
-            <label for="cardNumber">Número de Tarjeta</label>
-            <input id="cardNumber" type="text" required placeholder="XXXX XXXX XXXX XXXX" maxlength="19" class="card-input">
-            <span class="error-msg" id="cardNumber-error"></span>
-
-            <label for="cardHolder">Nombre del Titular de la Tarjeta</label>
-            <input id="cardHolder" type="text" required placeholder="Nombre Apellido" class="card-input">
-            <span class="error-msg" id="cardHolder-error"></span>
-            
-            <div class="vuelo-container">
-                <div class="vuelo-col">
-                    <label for="expiryDate">Fecha de Expiración (MM/AA)</label>
-                    <input type="text" id="expiryDate" required placeholder="MM/YY" maxlength="5" class="card-input">
-                    <span class="error-msg" id="expiryDate-error"></span>
-                </div>
-                <div class="vuelo-col">
-                    <label for="cvv">CVV</label>
-                    <input type="password" id="cvv" required placeholder="123" maxlength="4" class="card-input">
-                    <span class="error-msg" id="cvv-error"></span>
-                </div>
-            </div>
-
-            <h3 class="payment-subtitle">Dirección de Facturación</h3>
-
-            <label for="billingAddress">Calle y Número</label>
-            <input id="billingAddress" type="text" required placeholder="Av. Principal #123">
-
-            <div class="vuelo-container">
-                <div class="vuelo-col">
-                    <label for="billingCity">Ciudad</label>
-                    <input id="billingCity" type="text" required placeholder="San Salvador">
-                </div>
-                <div class="vuelo-col">
-                    <label for="billingZip">Código Postal</label>
-                    <input id="billingZip" type="text" required placeholder="00000">
-                    <span class="error-msg" id="billingZip-error"></span>
-                </div>
-            </div>
-            
-            <div class="terms-container">
-                <input type="checkbox" id="acceptTerms" required>
-                <label for="acceptTerms" class="terms-label">Acepto los <a href="#">Términos y Condiciones</a></label>
-                <span class="error-msg" id="terms-error"></span>
-            </div>
-
-            <div class="btn-group">
-                <button type="submit" class="btn">Confirmar y Generar Ticket</button>
-                <button type="button" class="btn ghost" id="backToStep1">← Volver a Datos</button>
-            </div>
-        </form>
-    </section>
-    <aside class="summary-section">
-      <div class="summary-card" id="resumenCard">
-        <div class="summary-top">
-          <h3 id="rutaTitulo">Selecciona origen y destino</h3>
-          <div id="statusFlight" style="font-size: 9pt;" class="muted">Aquí verás el resumen del precio antes de confirmar.</div>
+      <div class="summary-body">
+        <div class="seg">
+          <div class="seg-left">Salida</div>
+          <div class="seg-right" id="resFechaSalida">—</div>
         </div>
 
-        <div class="summary-body">
-          <div class="seg">
-            <div class="seg-left">Salida</div>
-            <div class="seg-right" id="resFechaSalida">—</div>
-          </div>
+        <div class="seg">
+          <div class="seg-left">Regreso</div>
+          <div class="seg-right" id="resFechaRegreso">—</div>
+        </div>
 
-          <div class="seg">
-            <div class="seg-left">Regreso</div>
-            <div class="seg-right" id="resFechaRegreso">—</div>
-          </div>
+        <div class="seg" id="resOperador"></div> <hr>
 
-          <hr>
+        <div class="price-row">
+          <div>Precio vuelo de ida</div>
+          <div id="resPrecioOrigen">$0.00</div>
+        </div>
+        <div class="price-row">
+          <div>Precio vuelo de regreso</div>
+          <div id="resPrecioDestino">$0.00</div>
+        </div>
+        <div class="price-row">
+          <div>Tarifa aplicada</div>
+          <div id="resTarifa">—</div>
+        </div>
 
-          <div class="price-row">
-            <div>Precio vuelo de ida</div>
-            <div id="resPrecioOrigen">$0.00</div>
-          </div>
-          <div class="price-row">
-            <div>Precio vuelo de regreso</div>
-            <div id="resPrecioDestino">$0.00</div>
-          </div>
-          <div class="price-row">
-            <div>Tarifa aplicada</div>
-            <div id="resTarifa">—</div>
-          </div>
+        <hr>
 
-          <hr>
+        <div class="price-row">
+          <div>Subtotal</div>
+          <div id="resSubtotal">$0.00</div>
+        </div>
+        <div class="price-row">
+          <div>Impuestos</div>
+          <div id="resImpuestos">$0.00</div>
+        </div>
+        <div class="price-row">
+          <div>Recargo por temporada</div>
+          <div id="resRecargo">$0.00</div>
+        </div>
 
-          <div class="price-row">
-            <div>Subtotal</div>
-            <div id="resSubtotal">$0.00</div>
-          </div>
-          <div class="price-row">
-            <div>Impuestos</div>
-            <div id="resImpuestos">$0.00</div>
-          </div>
-          <div class="price-row">
-            <div>Recargo por temporada</div>
-            <div id="resRecargo">$0.00</div>
-          </div>
+        <hr class="thick">
 
-          <hr class="thick">
+        <div class="price-row total">
+          <div>Total a pagar</div>
+          <div id="resTotal">$0.00</div>
+        </div>
 
-          <div class="price-row total">
-            <div>Total a pagar</div>
-            <div id="resTotal">$0.00</div>
-          </div>
-
-          <div class="muted small" style="font-size: 10pt;" id="noteTax">
-            * Los precios mostrados ya reciben impuestos y recargos cuando corresponda.
-          </div>
+        <div class="muted small" style="font-size: 10pt;" id="noteTax">
+          * Los precios mostrados ya reciben impuestos y recargos cuando corresponda.
         </div>
       </div>
-    </aside>
-    </main>
+    </div>
+    
+    <div class="ticket-actions-main" id="ticketActionsMain">
+        <button class="btn" id="mainPrintBtn">Ver y descargar ticket</button>
+        <button class="btn ghost" id="mainNewBtn">Hacer otra reserva</button>
+    </div>
+    
+  </aside>
+</main>
 <!--fin de main-->
 
   <script src="sistema.js"></script>
-  <!-- Pantalla éxito (inicialmente oculta) -->
+  <!-- Pantalla éxito (inicialmente oculta) -->  
+  <div id="leaveModal" class="overlay hidden">
+    <div class="modal-card">
+        <button class="close-btn" id="modalCloseBtn">×</button>
+        <h3 class="modal-title">Advertencia</h3>
+        <p>¿Estás seguro de quieres abandonar esta etapa? Tu información no se guardará.</p>
+        <div class="modal-actions">
+            <button class="btn ghost" id="modalCancelBtn">Cancelar</button>
+            <button class="btn" id="modalAcceptBtn">Aceptar</button>
+        </div>
+    </div>
+  </div>
+
   <div id="successScreen" class="overlay hidden">
     <div class="ticket-card">
+      <button class="close-btn" id="successCloseBtn">×</button> 
+
       <div class="ticket-header">
-  <img src="logo.png" alt="AeroTicket Logo" style="width: 60px;" class="app-logo">
+        <img src="logo.png" alt="AeroTicket Logo" style="width: 60px;" class="app-logo">
         <div>
           <h2>Reserva exitosa</h2>
           <p id="confText">Se creó tu reserva. Revisa el ticket abajo.</p>
@@ -285,6 +287,6 @@
 
   <footer class="footer-bar">
     <p>Copyright ©2025 AeroTicket | Creado por: Emillie Esquivel & Johanna Claros</p>
-</footer>
+  </footer>
 </body>
 </html>

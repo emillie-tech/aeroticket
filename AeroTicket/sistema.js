@@ -25,12 +25,8 @@ const temporadasAltas = [
 // NUEVA VARIABLE para guardar datos intermedios entre pasos
 let currentReservationData = null; 
 
-// Mapeo de IDs de pasos para la barra de progreso
-const progressSteps = {
-    1: safeGet("progressStep1"),
-    2: safeGet("progressStep2"),
-    3: safeGet("progressStep3"),
-};
+// Mapeo de IDs de pasos para la barra de progreso (Inicializado dentro de 'initialize' para asegurar que el DOM esté listo)
+let progressSteps = {};
 
 /* --------------- NAVEGACIÓN Y BARRA DE PROGRESO --------------- */
 
@@ -43,7 +39,7 @@ function updateProgressBar(stepNumber) {
         el && el.classList.remove("active", "completed");
     });
     
-    // Configurar el estado de los pasos
+   // Configurar el estado de los pasos
     if (stepNumber >= 1) {
         progressSteps[1] && progressSteps[1].classList.add("active");
     }
@@ -61,7 +57,6 @@ function updateProgressBar(stepNumber) {
     
     fill && (fill.style.width = width + "%");
 }
-
 function goToStep(stepNumber) {
     const s1 = safeGet("step1Container");
     const s2 = safeGet("step2Container");
@@ -73,8 +68,8 @@ function goToStep(stepNumber) {
     s2 && s2.classList.add("hidden");
     success && success.classList.add("hidden");
     
-    // Mostrar la sección <main> si vamos al paso 1 o 2 (ocultarla si vamos al 3)
-    if (stepNumber === 1 || stepNumber === 2) {
+    // Mostrar la sección <main> si vamos al paso 1, 2 o 3 (el resumen está en main)
+    if (stepNumber === 1 || stepNumber === 2 || stepNumber === 3) {
         main && main.classList.remove("hidden");
     } else {
         main && main.classList.add("hidden");
@@ -189,7 +184,7 @@ function calcularReserva({ origen, destino, fechaSalida, fechaRegreso, tarifaSel
   return { aO, aD, precioOrigen, precioDestino, vuelosCount, extraTarifaTotal, subtotalBase, impuestoRate, impuestos, recargo, total, esNacional, temporadaAlta: alta };
 }
 
-/* --------------- render summary --------------- */
+/* --------------- render summary (MODIFICADA para agregar operador) --------------- */
 function renderSummary() {
   const origen = safeGet("origen").value;
   const destino = safeGet("destino").value;
@@ -200,6 +195,7 @@ function renderSummary() {
   const titulo = safeGet("rutaTitulo");
   const resFechaSalida = safeGet("resFechaSalida");
   const resFechaRegreso = safeGet("resFechaRegreso");
+  const resOperador = safeGet("resOperador"); // <-- NUEVO ELEMENTO ID
   const resPrecioOrigen = safeGet("resPrecioOrigen");
   const resPrecioDestino = safeGet("resPrecioDestino");
   const resTarifa = safeGet("resTarifa");
@@ -221,6 +217,7 @@ function renderSummary() {
     if (titulo) titulo.textContent = "Selecciona origen y destino";
     if (resFechaSalida) resFechaSalida.textContent = fechaSalidaVal ? new Date(fechaSalidaVal).toLocaleDateString() : "—";
     if (resFechaRegreso) resFechaRegreso.textContent = fechaRegresoVal ? new Date(fechaRegresoVal).toLocaleDateString() : "—";
+    if (resOperador) resOperador.textContent = ""; // Limpiar si no hay ruta seleccionada
     if (resPrecioOrigen) resPrecioOrigen.textContent = fmtUSD(0);
     if (resPrecioDestino) resPrecioDestino.textContent = fmtUSD(0);
     if (resTarifa) resTarifa.textContent = "—";
@@ -241,6 +238,8 @@ function renderSummary() {
   if (titulo) titulo.textContent = `${calc.aO.city} (${calc.aO.iata}) → ${calc.aD.city} (${calc.aD.iata})`;
   if (resFechaSalida) resFechaSalida.textContent = fd ? fd.toLocaleDateString() : "—";
   if (resFechaRegreso) resFechaRegreso.textContent = fr ? fr.toLocaleDateString() : "—";
+  
+  if (resOperador) resOperador.textContent = "Vuelos operados por AVIANCA"; // <--- AÑADIDO
 
   if (resPrecioOrigen) resPrecioOrigen.textContent = fmtUSD(calc.precioOrigen);
   if (resPrecioDestino) resPrecioDestino.textContent = fmtUSD(calc.precioDestino);
@@ -258,11 +257,11 @@ function renderSummary() {
   if (statusFlight) statusFlight.textContent = calc.esNacional ? "Vuelo nacional (impuesto 13%)." : "Vuelo internacional (impuesto 20%).";
 }
 
-
+// VALIDACIÓN DE NOMBRE (MODIFICADA para mensaje más claro)
 function validarNombreCompleto(nombre) {
-  if (!nombre) return "El nombre es requerido.";
+  if (!nombre) return "El nombre del titular es requerido.";
   const partes = nombre.trim().split(/\s+/).filter(Boolean);
-  if (partes.length < 2) return "Ingresa tu nombre completo (nombre y apellidos).";
+  if (partes.length < 2) return "Ingresa el nombre completo del titular (nombre y apellido).";
   for (const p of partes) {
     if (p.length < 2) return "Cada palabra del nombre debe tener al menos 2 letras.";
   }
@@ -389,13 +388,19 @@ safeGet("paymentForm") && safeGet("paymentForm").addEventListener("submit", func
 
     // Lectura de campos del pago
     const cardNumber = safeGet("cardNumber").value.replace(/\s/g, ''); 
-    const cardHolder = safeGet("cardHolder").value.trim();
+    // Usamos la validación de nombre corregida para el titular de la tarjeta
+    const cardHolder = safeGet("cardHolder").value.trim(); 
     const expiryDate = safeGet("expiryDate").value.trim();
     const cvv = safeGet("cvv").value.trim();
     const billingZip = safeGet("billingZip").value.trim();
     const acceptTerms = safeGet("acceptTerms").checked;
     
     // Validaciones del pago
+    const holderMsg = validarNombreCompleto(cardHolder);
+    if (holderMsg) {
+      setError("cardHolder-error", holderMsg);
+      paymentOk = false;
+    }
     
     if (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber)) {
         setError("cardNumber-error", "Número de tarjeta inválido (13-19 dígitos).");
@@ -403,7 +408,7 @@ safeGet("paymentForm") && safeGet("paymentForm").addEventListener("submit", func
     }
 
     if (!/^\d{2}\/\d{2}$/.test(expiryDate) || expiryDate.slice(0, 2) > 12) {
-        setError("expiryDate-error", "Formato inválido (MM/YY).");
+        setError("expiryDate-error", "Formato inválido (MM/AA).");
         paymentOk = false;
     }
 
@@ -412,8 +417,9 @@ safeGet("paymentForm") && safeGet("paymentForm").addEventListener("submit", func
         paymentOk = false;
     }
     
-    if (billingZip.length !== 5 || !/^\d+$/.test(billingZip)) {
-        setError("billingZip-error", "Código Postal inválido (5 dígitos).");
+    // Note: Mantengo la validación de zip de 5 dígitos
+    if (billingZip.length < 3 || !/^\d+$/.test(billingZip)) {
+        setError("billingZip-error", "Código Postal inválido.");
         paymentOk = false;
     }
 
@@ -480,55 +486,173 @@ safeGet("backToStep1") && safeGet("backToStep1").addEventListener("click", () =>
     goToStep(1);
 });
 
-/* --------------- success --------------- */
+/* --------------- success (MODIFICADA: Corrección de Cierre de Pop-up) --------------- */
 function showSuccess(res) {
-  const overlay = safeGet("successScreen");
-  if (!overlay) { alert("Reserva creada: " + res.code); return; }
+    const overlay = safeGet("successScreen");
+    // const container = safeGet("step3Container"); // No es necesario, lo podemos quitar.
+    
+    if (!overlay) { alert("Reserva creada: " + res.code); return; }
 
-  safeGet("confText").textContent = `Tu código de reserva es ${res.code}. En breve recibirás un correo con tu ticket.`;
+    // 1. Mostrar el pop-up
+    overlay.classList.remove("hidden"); // Solo mostramos el overlay
+    
+    // Relleno de datos del ticket (Tu código existente)
+    safeGet("confText").textContent = `Tu código de reserva es ${res.code}. En breve recibirás un correo con tu ticket.`;
 
-  safeGet("bpRoute").textContent = `${res.route.origen.city} (${res.route.origen.iata}) → ${res.route.destino.city} (${res.route.destino.iata})`;
-  safeGet("bpDates").textContent = `Salida: ${res.dates.salida ? new Date(res.dates.salida).toLocaleString() : "—"} · Regreso: ${res.dates.regreso ? new Date(res.dates.regreso).toLocaleString() : "—"}`;
-  safeGet("bpTarifa").textContent = res.tarifa.charAt(0).toUpperCase() + res.tarifa.slice(1);
-  safeGet("bpClase").textContent = res.breakdown.esNacional ? "Nacional" : "Internacional";
-  safeGet("bpCode").textContent = res.code;
-  safeGet("bpPrice").textContent = fmtUSD(res.breakdown.total);
+    // Datos de la ruta
+    const routeText = `${res.route.origen.city} (${res.route.origen.iata}) → ${res.route.destino.city} (${res.route.destino.iata})`;
+    safeGet("bpRoute").textContent = routeText;
+    
+    // Fechas y operador AVIANCA (MODIFICADO)
+    const datesText = `Salida: ${res.dates.salida ? new Date(res.dates.salida).toLocaleDateString() : "—"} · Regreso: ${res.dates.regreso ? new Date(res.dates.regreso).toLocaleDateString() : "—"}`;
+    safeGet("bpDates").innerHTML = `${datesText}<br><span>Vuelos operados por AVIANCA</span>`; 
+    
+    safeGet("bpTarifa").textContent = res.tarifa.charAt(0).toUpperCase() + res.tarifa.slice(1);
+    safeGet("bpClase").textContent = res.breakdown.esNacional ? "Nacional" : "Internacional";
+    safeGet("bpCode").textContent = res.code;
+    safeGet("bpPrice").textContent = fmtUSD(res.breakdown.total);
 
-  // QR
-  const qnode = safeGet("qrcode");
-  if (qnode) {
-    qnode.innerHTML = "";
-    try {
-      new QRCode(qnode, { text: JSON.stringify({ code: res.code, name: res.passenger.nombre, route: `${res.route.origen.iata}-${res.route.destino.iata}`, total: res.breakdown.total }), width: 120, height: 120 });
-    } catch (err) { console.warn("QR error", err); }
-  }
+    // QR
+    const qnode = safeGet("qrcode");
+    if (qnode) {
+      qnode.innerHTML = "";
+      try {
+        new QRCode(qnode, { text: JSON.stringify({ code: res.code, name: res.passenger.nombre, route: `${res.route.origen.iata}-${res.route.destino.iata}`, total: res.breakdown.total }), width: 120, height: 120 });
+      } catch (err) { console.warn("QR error", err); }
+    }
 
-  // print
-  const printBtn = safeGet("printBtn");
-  if (printBtn) printBtn.onclick = () => {
-    const bpHTML = safeGet("boardingPass").outerHTML;
-    const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>Ticket ${res.code}</title><style>body{font-family:Arial;padding:20px}</style></head><body>${bpHTML}</body></html>`);
-    w.document.close();
-    setTimeout(() => w.print(), 300);
-  };
+    // print
+    const printBtn = safeGet("printBtn");
+    if (printBtn) printBtn.onclick = () => {
+      const bpHTML = safeGet("boardingPass").outerHTML;
+      const w = window.open("", "_blank");
+      w.document.write(`<html><head><title>Ticket ${res.code}</title><style>body{font-family:Arial;padding:20px}</style></head><body>${bpHTML}</body></html>`);
+      w.document.close();
+      setTimeout(() => w.print(), 300);
+    };
 
-  const newBtn = safeGet("newBtn");
-  if (newBtn) newBtn.onclick = () => window.location.reload();
+    // 2. LÓGICA DE CIERRE: SOLO OCULTAR EL POP-UP
+    
+    // a) Botón "X" (successCloseBtn)
+    const successCloseBtn = safeGet("successCloseBtn");
+    if (successCloseBtn) {
+        // Al dar clic, solo oculta el overlay
+        successCloseBtn.onclick = () => overlay.classList.add("hidden"); 
+    }
+    
+    // b) Cierre al dar click fuera del ticket (overlay)
+    if (overlay) {
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                // Al dar clic en el fondo, solo oculta el overlay
+                overlay.classList.add("hidden"); 
+            }
+        };
+    }
+    
+    // c) Botón "Hacer otra reserva" (newBtn): Este SÍ debe resetear
+    const newBtn = safeGet("newBtn");
+    if (newBtn) newBtn.onclick = () => goToStep(1); 
 }
+
+/* --------------- LÓGICA DE INTERFAZ Y NAVEGACIÓN (NUEVO) --------------- */
+
+// Variable para guardar la URL a la que se intentaba navegar
+let pendingNavigationUrl = null;
+
+function showLeaveModal(url) {
+    pendingNavigationUrl = url;
+    safeGet("leaveModal").classList.remove("hidden");
+}
+
+// Lógica de formato automático para tarjeta y fecha
+document.addEventListener("input", (e) => {
+    const t = e.target;
+
+    // 1. Número de Tarjeta: Añadir espacios cada 4 dígitos (0000 0000 0000 0000)
+    if (t.id === "cardNumber") {
+        const value = t.value.replace(/\D/g, '').substring(0, 16); // Elimina no-dígitos y limita a 16
+        t.value = value.match(/.{1,4}/g)?.join(' ') || '';
+    }
+
+    // 2. Fecha de Expiración: Añadir la pleca / después de MM (MM/AA)
+    if (t.id === "expiryDate") {
+        let value = t.value.replace(/\D/g, '').substring(0, 4);
+        if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        t.value = value;
+    }
+});
+
+// Eventos del modal de advertencia
+safeGet("modalCloseBtn") && safeGet("modalCloseBtn").addEventListener("click", () => {
+    safeGet("leaveModal").classList.add("hidden");
+    pendingNavigationUrl = null;
+});
+
+safeGet("modalCancelBtn") && safeGet("modalCancelBtn").addEventListener("click", () => {
+    safeGet("leaveModal").classList.add("hidden");
+    pendingNavigationUrl = null;
+});
+
+safeGet("modalAcceptBtn") && safeGet("modalAcceptBtn").addEventListener("click", () => {
+    safeGet("leaveModal").classList.add("hidden");
+    if (pendingNavigationUrl) {
+        // Redirige al destino que fue guardado
+        window.location.href = pendingNavigationUrl;
+    }
+});
+
+// Interceptar clics en la barra de navegación (para el modal de advertencia)
+document.querySelectorAll(".nav-menu a").forEach(link => {
+    link.addEventListener("click", function(e) {
+        // Obtenemos campos que indican que el usuario ya empezó a llenar algo
+        const origen = safeGet("origen")?.value;
+        const nombre = safeGet("nombre")?.value;
+        const currentStep = safeGet("step1Container")?.classList.contains("hidden") ? 2 : 1; 
+
+        // Si ya hay datos en los campos (o estamos en el paso 2) y el destino NO es "Reservar" (index.html), mostramos advertencia.
+        const isNotBookingPage = !e.target.href.includes("index.html");
+
+        // Usamos una verificación: si el currentStep es > 1 O ya se llenó origen O ya se llenó nombre
+        if ((currentStep > 1 || origen || nombre) && isNotBookingPage) {
+            e.preventDefault(); // Detiene la navegación inmediata
+            showLeaveModal(e.target.href);
+        }
+    });
+});
 
 /* --------------- init --------------- */
-loadAirports();
-renderSummary();
 
-/* -------------------------
-   TOGGLE NAV (Responsive)
--------------------------- */
-const navToggle = document.getElementById("navToggle");
-const navMenu = document.getElementById("navMenu");
+function initialize() {
+    // 1. Inicializar las referencias de los pasos de progreso de forma segura AQUÍ
+    progressSteps = {
+        1: safeGet("progressStep1"),
+        2: safeGet("progressStep2"),
+        3: safeGet("progressStep3"),
+    };
 
-if (navToggle && navMenu) {
-  navToggle.addEventListener("click", () => {
-    navMenu.classList.toggle("open");
-  });
+    // 2. Cargar datos y renderizar el resumen (loadAirports llama a renderSummary y populateSelects)
+    loadAirports();
+    
+    // 3. Lógica del menú responsive
+    /* -------------------------
+       TOGGLE NAV (Responsive)
+    -------------------------- */
+    const navToggle = document.getElementById("navToggle");
+    const navMenu = document.getElementById("navMenu");
+
+    if (navToggle && navMenu) {
+      navToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("open");
+      });
+    }
+    
+// ... dentro de initialize()
+    // 4. Aseguramos que el sistema inicie en el primer paso visible
+    goToStep(1); // <-- ¡Esta línea es la magia!
 }
+
+// Asegura que la inicialización ocurra solo después de que el DOM esté listo
+document.addEventListener('DOMContentLoaded', initialize);
