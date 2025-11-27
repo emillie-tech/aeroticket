@@ -1,4 +1,3 @@
-
 /* --------------- helpers --------------- */
 function safeGet(id) { return document.getElementById(id); }
 function fmtUSD(v){ return `$${Number(v||0).toFixed(2)}`; }
@@ -22,7 +21,6 @@ const temporadasAltas = [
 
 /* --------------- estado - Adiciones para multi-paso --------------- */
 
-// NUEVA VARIABLE para guardar datos intermedios entre pasos
 let currentReservationData = null; 
 
 // Mapeo de IDs de pasos para la barra de progreso (Inicializado dentro de 'initialize' para asegurar que el DOM esté listo)
@@ -30,16 +28,42 @@ let progressSteps = {};
 
 /* --------------- NAVEGACIÓN Y BARRA DE PROGRESO --------------- */
 
+function updateProgressBar(stepNumber) {
+    const fill = safeGet("progressBarFill");
+    let width = 0;
+
+    // Limpiar clases de todos los pasos
+    Object.values(progressSteps).forEach(el => {
+        el && el.classList.remove("active", "completed");
+    });
+    
+   // Configurar el estado de los pasos
+    if (stepNumber >= 1) {
+        progressSteps[1] && progressSteps[1].classList.add("active");
+    }
+    if (stepNumber >= 2) {
+        progressSteps[1] && progressSteps[1].classList.add("completed");
+        progressSteps[2] && progressSteps[2].classList.add("active");
+        width = 50; // 50% de avance
+    }
+    if (stepNumber >= 3) {
+        progressSteps[1] && progressSteps[1].classList.add("completed");
+        progressSteps[2] && progressSteps[2].classList.add("completed");
+        progressSteps[3] && progressSteps[3].classList.add("completed");
+        width = 100; // 100% completado
+    }
+    
+    fill && (fill.style.width = width + "%");
+}
+
 function goToStep(stepNumber) {
     const s1 = safeGet("step1Container");
     const s2 = safeGet("step2Container");
     const success = safeGet("successScreen");
     const main = safeGet("main");
     
-    // --- NUEVOS ELEMENTOS A CONTROLAR EN EL RESUMEN (Summary Section) ---
-    // Asegúrate de que tu resumen de compra tenga el ID "resumenCard"
+    // --- ELEMENTOS A CONTROLAR EN EL RESUMEN (Summary Section) ---
     const resumenCard = safeGet("resumenCard"); 
-    // Asegúrate de que el contenedor de los botones de ticket tenga el ID "ticketActionsMain"
     const ticketActionsMain = safeGet("ticketActionsMain"); 
     // -------------------------------------------------------------------
 
@@ -50,15 +74,14 @@ function goToStep(stepNumber) {
     
     // Lógica para mostrar/ocultar los elementos del resumen lateral y el contenido principal
     if (stepNumber === 1 || stepNumber === 2) {
-        main && main.classList.remove("hidden");
-        resumenCard && resumenCard.classList.remove("hidden");
-        ticketActionsMain && ticketActionsMain.classList.add("hidden"); // OCULTAR los botones en pasos 1 y 2
+        main && main.classList.remove("hidden"); // Mantener visible <main>
+        resumenCard && resumenCard.classList.remove("hidden"); // Mostrar resumen detallado
+        ticketActionsMain && ticketActionsMain.classList.add("hidden"); // Ocultar botones de ticket
     } else if (stepNumber === 3) {
-        // En el paso 3 (Éxito), ocultamos el contenedor principal (main) y el resumen lateral,
-        // ya que el ticket de éxito aparece en un modal (successScreen).
-        main && main.classList.add("hidden");
-        resumenCard && resumenCard.classList.add("hidden"); // OCULTAR la tarjeta de resumen lateral
-        ticketActionsMain && ticketActionsMain.classList.add("hidden"); // OCULTAR los botones laterales
+        // PASO 3: Mantenemos <main> visible para mostrar el resumen/botones de la derecha.
+        main && main.classList.remove("hidden"); // ¡IMPORTANTE! MANTENER <main> VISIBLE
+        resumenCard && resumenCard.classList.add("hidden"); // Ocultar el resumen detallado de precios
+        ticketActionsMain && ticketActionsMain.classList.remove("hidden"); // ¡MOSTRAR los botones del ticket!
     }
 
     // Lógica para mostrar el contenido del paso actual
@@ -74,18 +97,34 @@ function goToStep(stepNumber) {
         }
         s2 && s2.classList.remove("hidden");
         updateProgressBar(2);
-
-        // Actualizar el mini-resumen en el formulario de pago (Paso 2)
-        const calc = currentReservationData.calc;
-        safeGet("paymentTotalDisplay").textContent = fmtUSD(calc.total);
-        safeGet("paymentRouteDisplay").textContent = `${calc.aO.city} (${calc.aO.iata}) → ${calc.aD.city} (${calc.aD.iata})`;
-        
+        // Las líneas para actualizar el mini-resumen de pago se eliminaron correctamente.
     } else if (stepNumber === 3) {
-        success && success.classList.remove("hidden");
+        success && success.classList.remove("hidden"); // Muestra el modal/pop-up al entrar al Paso 3
         updateProgressBar(3);
-        // Los botones de ticket ahora solo aparecerán dentro del modal #successScreen.
     }
 }
+
+/* --------------- LÓGICA DE REINICIO --------------- */
+
+function resetSystem() {
+    // 1. Ocultar la pantalla de éxito
+    const success = safeGet("successScreen");
+    success && success.classList.add("hidden");
+    
+    // 2. Limpiar datos y restablecer el estado
+    currentReservationData = null; 
+    
+    // 3. Ir al primer paso (que mostrará el formulario 1 y el resumen lateral vacío)
+    goToStep(1); 
+
+    // 4. Limpiar formularios
+    safeGet("bookingForm") && safeGet("bookingForm").reset();
+    safeGet("paymentForm") && safeGet("paymentForm").reset();
+
+    // 5. Resetear el resumen de la derecha 
+    renderSummary(); 
+}
+
 
 /* --------------- cargar aeropuertos --------------- */
 async function loadAirports() {
@@ -472,10 +511,9 @@ safeGet("backToStep1") && safeGet("backToStep1").addEventListener("click", () =>
     goToStep(1);
 });
 
-/* --------------- success (MODIFICADA: Corrección de Cierre de Pop-up) --------------- */
+/* --------------- success (CORREGIDO: Ahora NO usa resetSystem al cerrar, solo oculta el modal) --------------- */
 function showSuccess(res) {
     const overlay = safeGet("successScreen");
-    // const container = safeGet("step3Container"); // No es necesario, lo podemos quitar.
     
     if (!overlay) { alert("Reserva creada: " + res.code); return; }
 
@@ -517,12 +555,12 @@ function showSuccess(res) {
       setTimeout(() => w.print(), 300);
     };
 
-    // 2. LÓGICA DE CIERRE: SOLO OCULTAR EL POP-UP
+    // 2. LÓGICA DE CIERRE: SOLO OCULTAR EL POP-UP (MANTENIENDO EL PASO 3 DE FONDO)
     
     // a) Botón "X" (successCloseBtn)
     const successCloseBtn = safeGet("successCloseBtn");
     if (successCloseBtn) {
-        // Al dar clic, solo oculta el overlay
+        // Al dar clic, solo oculta el overlay. ¡NO LLAMA A resetSystem!
         successCloseBtn.onclick = () => overlay.classList.add("hidden"); 
     }
     
@@ -530,15 +568,19 @@ function showSuccess(res) {
     if (overlay) {
         overlay.onclick = (e) => {
             if (e.target === overlay) {
-                // Al dar clic en el fondo, solo oculta el overlay
+                // Al dar clic en el fondo, solo oculta el overlay. ¡NO LLAMA A resetSystem!
                 overlay.classList.add("hidden"); 
             }
         };
     }
     
-    // c) Botón "Hacer otra reserva" (newBtn): Este SÍ debe resetear
+    // c) Botón "Hacer otra reserva" (newBtn): ESTE SÍ debe resetear
     const newBtn = safeGet("newBtn");
-    if (newBtn) newBtn.onclick = () => goToStep(1); 
+    if (newBtn) newBtn.onclick = () => resetSystem(); 
+
+    // d) Botón "Hacer otra reserva" del resumen lateral (mainNewBtn): ESTE SÍ debe resetear
+    const mainNewBtn = safeGet("mainNewBtn");
+    if (mainNewBtn) mainNewBtn.onclick = () => resetSystem(); 
 }
 
 /* --------------- LÓGICA DE INTERFAZ Y NAVEGACIÓN (NUEVO) --------------- */
@@ -635,9 +677,8 @@ function initialize() {
       });
     }
     
-// ... dentro de initialize()
     // 4. Aseguramos que el sistema inicie en el primer paso visible
-    goToStep(1); // <-- ¡Esta línea es la magia!
+    goToStep(1);
 }
 
 // Asegura que la inicialización ocurra solo después de que el DOM esté listo
