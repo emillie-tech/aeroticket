@@ -109,7 +109,7 @@ function goToStep(stepNumber) {
 /* --------------- cargar aeropuertos --------------- */
 async function loadAirports() {
   try {
-    const url = "https://pruebasaeroticket.free.beeceptor.com/airports";
+    const url = "https://aeroticket.free.beeceptor.com/airports";
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
