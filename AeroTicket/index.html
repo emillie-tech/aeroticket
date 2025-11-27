@@ -32,9 +32,30 @@
     <a href="CAMBIAR_ENLACE" class="nav-btn">Centro de ayuda</a>
   </nav>
 </header>
+<!-- nuevo paso de pago estilo barra de progreso-->
 
-  <main class="main">
-    <section class="form-section">
+  <div class="progress-container">
+    <div class="progress-bar-line">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+    </div>
+    <div class="progress-step active" id="progressStep1">
+        <span class="step-circle">1</span>
+        <span class="step-label">Datos de Vuelo</span>
+    </div>
+    <div class="progress-step" id="progressStep2">
+        <span class="step-circle">2</span>
+        <span class="step-label">Pago Seguro</span>
+    </div>
+    <div class="progress-step" id="progressStep3">
+        <span class="step-circle">3</span>
+        <span class="step-label">Generar Ticket</span>
+    </div>
+</div>
+<!-- inicia el main-->
+<main class="main">
+
+    <section id="step1Container" class="form-section">
+      
       <form id="reservaForm" class="form-card" autocomplete="off">
         <h2>Datos del pasajero</h2>
 
@@ -50,50 +71,119 @@
         <input type="text" id="identificacion" name="identificacion" required placeholder="Ej. 01234567-8">
         <span id="id-error" class="error-msg"></span>
 
-<br>
-<br>
+        <br>
+        <br>
 
-<h2 style="margin-bottom: 0%;">Datos del vuelo</h2>
-<div class="vuelo-container">
+        <h2 style="margin-bottom: 0%;">Datos del vuelo</h2>
+        <div class="vuelo-container">
 
-  <div class="vuelo-col">
-    <label for="origen">Origen</label>
-    <select id="origen" name="origen">
-      <option value="">Selecciona un aeropuerto...</option>
-    </select>
-
-    <label for="fechaSalida" class="label-fecha">Fecha de salida</label>
-    <input type="date" id="fechaSalida" name="fechaSalida">
-  </div>
+            <div class="vuelo-col">
+                <label for="origen">Origen</label>
+                <select id="origen" name="origen" required>
+                <option value="">Selecciona un aeropuerto...</option>
+                </select>
+                <span class="error-msg" id="origen-error"></span>
 
 
-  <div class="vuelo-col">
-    <label for="destino">Destino</label>
-    <select id="destino" name="destino">
-      <option value="">Selecciona un aeropuerto...</option>
-    </select>
+                <label for="fechaSalida" class="label-fecha">Fecha de salida</label>
+                <input type="date" id="fechaSalida" name="fechaSalida" required>
+                <span class="error-msg" id="salida-error"></span>
+            </div>
 
-    <label for="fechaRegreso" class="label-fecha">Fecha de regreso</label>
-    <input type="date" id="fechaRegreso" name="fechaRegreso">
-  </div>
 
-</div>
+            <div class="vuelo-col">
+                <label for="destino">Destino</label>
+                <select id="destino" name="destino" required>
+                <option value="">Selecciona un aeropuerto...</option>
+                </select>
+                <span class="error-msg" id="destino-error"></span>
 
-</div>
-<br>
+
+                <label for="fechaRegreso" class="label-fecha">Fecha de regreso</label>
+                <input type="date" id="fechaRegreso" name="fechaRegreso">
+                <span class="error-msg" id="regreso-error"></span>
+            </div>
+        </div>
+        <br>
 
 
         <label for="tarifa">Tarifa</label>
         <div class="tarifas">
-          <label><input type="radio" name="tarifa" value="economica" checked> Económica (+$100 / vuelo)</label>
-          <label><input type="radio" name="tarifa" value="clasica"> Clásica (+$150 / vuelo)</label>
-          <label><input type="radio" name="tarifa" value="business"> Business (+$250 / vuelo)</label>
+            <label><input type="radio" name="tarifa" value="economica" required checked> Económica (+$100 / vuelo)</label>
+            <label><input type="radio" name="tarifa" value="clasica"> Clásica (+$150 / vuelo)</label>
+            <label><input type="radio" name="tarifa" value="business"> Business (+$250 / vuelo)</label>
         </div>
-<br>
-        <button type="submit" class="btn">Ir a pagar</button>
+        <span class="error-msg" id="tarifa-error"></span>
+        <br>
+        
+        <button type="submit" class="btn">Ir a Pagar →</button>
       </form>
-    </section>
 
+    </section>
+    <section id="step2Container" class="form-section hidden">
+        <form id="paymentForm" class="form-card" autocomplete="off">
+            <h2>Paso 2 de 3: Pago Seguro</h2>
+
+            <div class="payment-summary-display">
+                <span class="muted small" id="paymentRouteDisplay">Ruta seleccionada</span>
+                <div class="price-row total">
+                    <div>Total a Pagar:</div>
+                    <div id="paymentTotalDisplay" class="payment-total-amount">$0.00</div>
+                </div>
+            </div>
+
+            <h3 class="payment-subtitle">Detalles de la Tarjeta</h3>
+
+            <label for="cardNumber">Número de Tarjeta</label>
+            <input id="cardNumber" type="text" required placeholder="XXXX XXXX XXXX XXXX" maxlength="19" class="card-input">
+            <span class="error-msg" id="cardNumber-error"></span>
+
+            <label for="cardHolder">Nombre del Titular de la Tarjeta</label>
+            <input id="cardHolder" type="text" required placeholder="Nombre Apellido" class="card-input">
+            <span class="error-msg" id="cardHolder-error"></span>
+            
+            <div class="vuelo-container">
+                <div class="vuelo-col">
+                    <label for="expiryDate">Fecha de Expiración (MM/AA)</label>
+                    <input type="text" id="expiryDate" required placeholder="MM/YY" maxlength="5" class="card-input">
+                    <span class="error-msg" id="expiryDate-error"></span>
+                </div>
+                <div class="vuelo-col">
+                    <label for="cvv">CVV</label>
+                    <input type="password" id="cvv" required placeholder="123" maxlength="4" class="card-input">
+                    <span class="error-msg" id="cvv-error"></span>
+                </div>
+            </div>
+
+            <h3 class="payment-subtitle">Dirección de Facturación</h3>
+
+            <label for="billingAddress">Calle y Número</label>
+            <input id="billingAddress" type="text" required placeholder="Av. Principal #123">
+
+            <div class="vuelo-container">
+                <div class="vuelo-col">
+                    <label for="billingCity">Ciudad</label>
+                    <input id="billingCity" type="text" required placeholder="San Salvador">
+                </div>
+                <div class="vuelo-col">
+                    <label for="billingZip">Código Postal</label>
+                    <input id="billingZip" type="text" required placeholder="00000">
+                    <span class="error-msg" id="billingZip-error"></span>
+                </div>
+            </div>
+            
+            <div class="terms-container">
+                <input type="checkbox" id="acceptTerms" required>
+                <label for="acceptTerms" class="terms-label">Acepto los <a href="#">Términos y Condiciones</a></label>
+                <span class="error-msg" id="terms-error"></span>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn">Confirmar y Generar Ticket</button>
+                <button type="button" class="btn ghost" id="backToStep1">← Volver a Datos</button>
+            </div>
+        </form>
+    </section>
     <aside class="summary-section">
       <div class="summary-card" id="resumenCard">
         <div class="summary-top">
@@ -155,7 +245,8 @@
         </div>
       </div>
     </aside>
-  </main>
+    </main>
+<!--fin de main-->
 
   <script src="sistema.js"></script>
   <!-- Pantalla éxito (inicialmente oculta) -->

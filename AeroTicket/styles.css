@@ -590,3 +590,169 @@ body {
 }
 
 
+/* ==================================== */
+/* === ESTILOS DE BARRA DE PROGRESO === */
+/* ==================================== */
+.progress-container {
+    /* Define el ancho y centra la barra de progreso en la página */
+    width: 70%; 
+    max-width: 800px;
+    margin: 30px auto 30px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 10px 0;
+}
+
+.progress-bar-line {
+    /* Línea de fondo (gris) */
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background-color: var(--line);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.progress-bar-fill {
+    /* Línea de progreso (azul), controlada por JS */
+    height: 100%;
+    width: 0%; 
+    background-color: var(--azul-oscuro);
+    transition: width 0.4s ease-in-out;
+}
+
+.progress-step {
+    /* Contenedor de cada número y etiqueta */
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    text-align: center;
+    color: var(--muted);
+    transition: color 0.4s;
+}
+
+.step-circle {
+    /* El círculo con el número */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--card);
+    border: 3px solid var(--line);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--muted);
+    transition: background-color 0.4s, border-color 0.4s, color 0.4s;
+}
+
+/* ESTADOS DE PROGRESO (Controlados por JS) */
+.progress-step.active .step-circle {
+    border-color: var(--azul-oscuro);
+    color: var(--azul-oscuro);
+}
+
+.progress-step.completed .step-circle {
+    background-color: var(--azul-oscuro);
+    border-color: var(--azul-oscuro);
+    color: var(--card); /* Texto blanco sobre fondo azul */
+}
+
+.progress-step.completed {
+    color: var(--azul-oscuro);
+}
+
+.step-label {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* === ESTILOS ESPECÍFICOS DE PAGO (P2) === */
+
+.hidden {
+    display: none !important;
+}
+
+/* Títulos de sub-sección en el formulario de pago */
+.form-card h3.payment-subtitle {
+    margin-top: 25px; 
+    margin-bottom: 10px;
+    font-size: 18px; 
+    color: var(--azul-oscuro);
+}
+
+/* Contenedor del mini-resumen de precio en el Paso 2 */
+.payment-summary-display {
+    border: 1px dashed var(--line);
+    background-color: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    margin-top: 15px;
+}
+
+.payment-total-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--azul-oscuro);
+}
+
+/* Contenedor de Términos y Condiciones */
+.terms-container {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.terms-container input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.terms-container .terms-label {
+    display: inline; 
+    font-size: 13px;
+    line-height: 1.2; 
+}
+
+.terms-container .terms-label a {
+    color: var(--azul-oscuro);
+    text-decoration: underline;
+}
+
+/* Grupo de botones al final (Confirmar y Volver) */
+.btn-group {
+    display: flex; 
+    gap: 15px; 
+    margin-top: 30px;
+    flex-wrap: wrap; 
+}
+
+/* Estilo para el botón 'ghost' (Volver) */
+.btn.ghost {
+    background: transparent;
+    border: 1px solid var(--azul-oscuro);
+    color: var(--azul-oscuro);
+}
+.btn.ghost:hover {
+    background: rgba(1, 102, 165, 0.05); /* Color de fondo ligero al pasar el mouse */
+}
+
+/* Ajustes Responsivos */
+@media (max-width: 768px) {
+    .progress-container {
+        width: 90%;
+        margin: 20px auto 20px auto;
+        padding: 0;
+    }
+    .step-label {
+        font-size: 12px;
+    }
+}

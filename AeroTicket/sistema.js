@@ -19,10 +19,97 @@ const temporadasAltas = [
   { inicio: "2025-07-01", fin: "2025-07-31" }
 ];
 
+
+/* --------------- estado - Adiciones para multi-paso --------------- */
+
+// NUEVA VARIABLE para guardar datos intermedios entre pasos
+let currentReservationData = null; 
+
+// Mapeo de IDs de pasos para la barra de progreso
+const progressSteps = {
+    1: safeGet("progressStep1"),
+    2: safeGet("progressStep2"),
+    3: safeGet("progressStep3"),
+};
+
+/* --------------- NAVEGACIÓN Y BARRA DE PROGRESO --------------- */
+
+function updateProgressBar(stepNumber) {
+    const fill = safeGet("progressBarFill");
+    let width = 0;
+
+    // Limpiar clases de todos los pasos
+    Object.values(progressSteps).forEach(el => {
+        el && el.classList.remove("active", "completed");
+    });
+    
+    // Configurar el estado de los pasos
+    if (stepNumber >= 1) {
+        progressSteps[1] && progressSteps[1].classList.add("active");
+    }
+    if (stepNumber >= 2) {
+        progressSteps[1] && progressSteps[1].classList.add("completed");
+        progressSteps[2] && progressSteps[2].classList.add("active");
+        width = 50; // 50% de avance
+    }
+    if (stepNumber >= 3) {
+        progressSteps[1] && progressSteps[1].classList.add("completed");
+        progressSteps[2] && progressSteps[2].classList.add("completed");
+        progressSteps[3] && progressSteps[3].classList.add("completed");
+        width = 100; // 100% completado
+    }
+    
+    fill && (fill.style.width = width + "%");
+}
+
+function goToStep(stepNumber) {
+    const s1 = safeGet("step1Container");
+    const s2 = safeGet("step2Container");
+    const success = safeGet("successScreen");
+    const main = safeGet("main");
+
+    // Ocultar todas las secciones principales (formularios)
+    s1 && s1.classList.add("hidden");
+    s2 && s2.classList.add("hidden");
+    success && success.classList.add("hidden");
+    
+    // Mostrar la sección <main> si vamos al paso 1 o 2 (ocultarla si vamos al 3)
+    if (stepNumber === 1 || stepNumber === 2) {
+        main && main.classList.remove("hidden");
+    } else {
+        main && main.classList.add("hidden");
+    }
+
+
+    if (stepNumber === 1) {
+        s1 && s1.classList.remove("hidden");
+        updateProgressBar(1);
+    } else if (stepNumber === 2) {
+        // Asegurarse de que tenemos datos del paso 1 antes de avanzar
+        if (!currentReservationData) {
+            console.error("Datos de reserva faltantes para el Paso 2.");
+            goToStep(1); 
+            return;
+        }
+        s2 && s2.classList.remove("hidden");
+        updateProgressBar(2);
+
+        // Actualizar el mini-resumen en el formulario de pago (Paso 2)
+        const calc = currentReservationData.calc;
+        safeGet("paymentTotalDisplay").textContent = fmtUSD(calc.total);
+        safeGet("paymentRouteDisplay").textContent = `${calc.aO.city} (${calc.aO.iata}) → ${calc.aD.city} (${calc.aD.iata})`;
+        
+    } else if (stepNumber === 3) {
+        success && success.classList.remove("hidden");
+        updateProgressBar(3);
+    }
+}
+
+
 /* --------------- cargar aeropuertos --------------- */
 async function loadAirports() {
   try {
-    const url = "https://aeroticket.free.beeceptor.com/airports";
+    const url = "https://pruebasaeroticket.free.beeceptor.com/airports";
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
@@ -238,82 +325,165 @@ document.addEventListener("change", (e) => {
   }
 });
 
-/* --------------- submit --------------- */
+/* --------------- submits --------------- */
+
+/* ---------------PASO 1: datos --------------- */
 safeGet("reservaForm") && safeGet("reservaForm").addEventListener("submit", function(ev){
-  ev.preventDefault();
+    ev.preventDefault();
 
-  // leer campos
-  const nombre = (safeGet("nombre") && safeGet("nombre").value || "").trim();
-  const correo = (safeGet("correo") && safeGet("correo").value || "").trim();
-  const identificacion = (safeGet("identificacion") && safeGet("identificacion").value || "").trim();
-  const origen = safeGet("origen").value;
-  const destino = safeGet("destino").value;
-  const fechaSalidaVal = safeGet("fechaSalida").value;
-  const fechaRegresoVal = safeGet("fechaRegreso").value;
-  const tarifa = document.querySelector('input[name="tarifa"]:checked') ? document.querySelector('input[name="tarifa"]:checked').value : "economica";
+    // Leer campos (mantenemos tu lógica existente)
+    const nombre = (safeGet("nombre") && safeGet("nombre").value || "").trim();
+    const correo = (safeGet("correo") && safeGet("correo").value || "").trim();
+    const identificacion = (safeGet("identificacion") && safeGet("identificacion").value || "").trim();
+    const origen = safeGet("origen").value;
+    const destino = safeGet("destino").value;
+    const fechaSalidaVal = safeGet("fechaSalida").value;
+    const fechaRegresoVal = safeGet("fechaRegreso").value;
+    const tarifa = document.querySelector('input[name="tarifa"]:checked') ? document.querySelector('input[name="tarifa"]:checked').value : "economica";
 
-  const datos = {
-    nombre, correo, identificacion,
-    origen, destino,
-    fechaSalida: fechaSalidaVal ? new Date(fechaSalidaVal) : null,
-    fechaRegreso: fechaRegresoVal ? new Date(fechaRegresoVal) : null,
-    tarifa
-  };
-
-  // VALIDACIONES JS (inline)
-  if (!validarCamposForm(datos)) {
-    // foco al primer error visible
-    const firstErr = document.querySelector(".error-msg.visible");
-    if (firstErr) {
-      const elId = firstErr.id.replace("-error", "");
-      const targetEl = safeGet(elId) || safeGet("identificacion");
-      targetEl && targetEl.focus();
+    const datos = {
+        nombre, correo, identificacion,
+        origen, destino,
+        fechaSalida: fechaSalidaVal ? new Date(fechaSalidaVal) : null,
+        fechaRegreso: fechaRegresoVal ? new Date(fechaRegresoVal) : null,
+        tarifa
+    };
+    
+    // Validaciones (mantenemos tu lógica existente)
+    if (!validarCamposForm(datos)) {
+        // foco al primer error visible
+        const firstErr = document.querySelector(".error-msg.visible");
+        if (firstErr) {
+            const elId = firstErr.id.replace("-error", "");
+            const targetEl = safeGet(elId) || safeGet("identificacion");
+            targetEl && targetEl.focus();
+        }
+        return; 
     }
-    return;
-  }
 
-  // calcular reserva (misma lógica)
-  const calc = calcularReserva({ origen: datos.origen, destino: datos.destino, fechaSalida: datos.fechaSalida, fechaRegreso: datos.fechaRegreso, tarifaSeleccionada: datos.tarifa });
-  if (!calc) { alert("Error calculando la reserva. Revisa origen/destino."); return; }
-
-  const code = "RSV-" + Math.random().toString(36).slice(2,8).toUpperCase();
-  const reservaObj = {
-    code,
-    createdAt: new Date().toISOString(),
-    passenger: { nombre: datos.nombre, correo: datos.correo, identificacion: datos.identificacion },
-    route: { origen: calc.aO, destino: calc.aD },
-    dates: { salida: datos.fechaSalida, regreso: datos.fechaRegreso },
-    tarifa: datos.tarifa,
-    breakdown: {
-      precioOrigen: calc.precioOrigen,
-      precioDestino: calc.precioDestino,
-      extraTarifaTotal: calc.extraTarifaTotal,
-      subtotalBase: calc.subtotalBase,
-      impuestos: calc.impuestos,
-      recargo: calc.recargo,
-      total: calc.total,
-      esNacional: calc.esNacional,
-      temporadaAlta: calc.temporadaAlta
+    // Calcular reserva
+    const calc = calcularReserva({ origen: datos.origen, destino: datos.destino, fechaSalida: datos.fechaSalida, fechaRegreso: datos.fechaRegreso, tarifaSeleccionada: datos.tarifa });
+    if (!calc) { 
+        alert("Error calculando la reserva. Revisa origen/destino."); 
+        return; 
     }
-  };
 
-  // guardar historial local
-  try {
-    const hist = JSON.parse(localStorage.getItem("reservas") || "[]");
-    hist.push(reservaObj);
-    localStorage.setItem("reservas", JSON.stringify(hist));
-  } catch (err) {
-    console.warn("No se pudo guardar en localStorage", err);
-  }
+    // Almacenar datos y AVANZAR AL PASO 2
+    currentReservationData = { datos, calc };
+    goToStep(2);
+});
 
-  showSuccess(reservaObj);
+/* --------------- PASO 2: pago --------------- */
+safeGet("paymentForm") && safeGet("paymentForm").addEventListener("submit", function(ev){
+    ev.preventDefault();
+
+    // Limpiar errores previos de pago
+    setError("cardNumber-error", "");
+    setError("cardHolder-error", "");
+    setError("expiryDate-error", "");
+    setError("cvv-error", "");
+    setError("billingZip-error", "");
+    setError("terms-error", "");
+    
+    let paymentOk = true;
+
+    // Lectura de campos del pago
+    const cardNumber = safeGet("cardNumber").value.replace(/\s/g, ''); 
+    const cardHolder = safeGet("cardHolder").value.trim();
+    const expiryDate = safeGet("expiryDate").value.trim();
+    const cvv = safeGet("cvv").value.trim();
+    const billingZip = safeGet("billingZip").value.trim();
+    const acceptTerms = safeGet("acceptTerms").checked;
+    
+    // Validaciones del pago
+    
+    if (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber)) {
+        setError("cardNumber-error", "Número de tarjeta inválido (13-19 dígitos).");
+        paymentOk = false;
+    }
+
+    if (!/^\d{2}\/\d{2}$/.test(expiryDate) || expiryDate.slice(0, 2) > 12) {
+        setError("expiryDate-error", "Formato inválido (MM/YY).");
+        paymentOk = false;
+    }
+
+    if (cvv.length < 3 || cvv.length > 4 || !/^\d+$/.test(cvv)) {
+        setError("cvv-error", "CVV inválido (3 o 4 dígitos).");
+        paymentOk = false;
+    }
+    
+    if (billingZip.length !== 5 || !/^\d+$/.test(billingZip)) {
+        setError("billingZip-error", "Código Postal inválido (5 dígitos).");
+        paymentOk = false;
+    }
+
+    if (!acceptTerms) {
+        setError("terms-error", "Debes aceptar los términos y condiciones.");
+        paymentOk = false;
+    }
+    
+    if (!paymentOk) {
+        return;
+    }
+
+    // Generar ticket y crear objeto final
+    if (!currentReservationData) {
+        alert("Error: Datos de reserva perdidos. Regresando al paso 1.");
+        goToStep(1);
+        return;
+    }
+
+    const { datos, calc } = currentReservationData;
+    
+    // Crear el objeto final de reserva usando los datos guardados
+    const code = "RSV-" + Math.random().toString(36).slice(2,8).toUpperCase();
+    const reservaObj = {
+      code,
+      createdAt: new Date().toISOString(),
+      passenger: { nombre: datos.nombre, correo: datos.correo, identificacion: datos.identificacion },
+      route: { origen: calc.aO, destino: calc.aD },
+      dates: { salida: datos.fechaSalida, regreso: datos.fechaRegreso },
+      tarifa: datos.tarifa,
+      breakdown: {
+        precioOrigen: calc.precioOrigen,
+        precioDestino: calc.precioDestino,
+        extraTarifaTotal: calc.extraTarifaTotal,
+        subtotalBase: calc.subtotalBase,
+        impuestos: calc.impuestos,
+        recargo: calc.recargo,
+        total: calc.total,
+        esNacional: calc.esNacional,
+        temporadaAlta: calc.temporadaAlta
+      },
+      payment: {
+        last4: cardNumber.slice(-4),
+        holder: cardHolder
+      }
+    };
+    
+    // Guardar historial local 
+    try {
+        const hist = JSON.parse(localStorage.getItem("reservas") || "[]");
+        hist.push(reservaObj);
+        localStorage.setItem("reservas", JSON.stringify(hist));
+    } catch (err) {
+        console.warn("No se pudo guardar en localStorage", err);
+    }
+    
+    // Mostrar éxito
+    showSuccess(reservaObj); 
+    goToStep(3); 
+});
+
+/* --------------- Listener para Volver (PASO 2 -> PASO 1)--------------- */
+safeGet("backToStep1") && safeGet("backToStep1").addEventListener("click", () => {
+    goToStep(1);
 });
 
 /* --------------- success --------------- */
 function showSuccess(res) {
   const overlay = safeGet("successScreen");
   if (!overlay) { alert("Reserva creada: " + res.code); return; }
-  overlay.classList.remove("hidden");
 
   safeGet("confText").textContent = `Tu código de reserva es ${res.code}. En breve recibirás un correo con tu ticket.`;
 
